@@ -11,13 +11,13 @@ require_relative 'dns_checker/version'
 module DnsChecker
   DNS = Resolv::DNS.new
 
-  def self.on_our_nameservers?(domain_names:, nameservers:)
+  def self.on_our_nameservers?(domain_names:, nameservers:, groups: 25)
     nameserver_ips = nameservers.each_with_object(Set.new) do |ns_name, ips|
       Nameserver.new(name: ns_name).a_records.each { |a| ips << a }
     end
     threads = []
     result = {}
-    domain_names.in_groups(10, false) do |group|
+    domain_names.in_groups(groups, false) do |group|
       threads << Thread.new do
         domains = group.map { |g| Domain.new(g) }
         domains.each do |domain|
